@@ -16,5 +16,7 @@ public class CoordinateDocument {
     private String trackerId;
     private String dateFormat;
     private Date date;
-    private List<TrackerCordinates> trackerCordinatesList;
+    private Cordinates cordinates;
+
 }
+
