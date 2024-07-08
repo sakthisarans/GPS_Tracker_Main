@@ -16,7 +16,6 @@ import org.springframework.messaging.MessageHandler;
 
 @Configuration
 public class EmqxPublisher {
-
     @Value("${emqx.mqtt.server}")
     private String server;
     @Value("${emqx.mqtt.port}")
@@ -30,20 +29,19 @@ public class EmqxPublisher {
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
-
         options.setServerURIs(new String[] { server+":"+port });
         options.setUserName(clientId);
         options.setPassword(password.toCharArray());
         options.setCleanSession(true);
-
         factory.setConnectionOptions(options);
-
         return factory;
     }
+
     @Bean
     public MessageChannel mqttOutboundChannel() {
         return new DirectChannel();
     }
+
     @Bean
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MessageHandler mqttOutbound() {

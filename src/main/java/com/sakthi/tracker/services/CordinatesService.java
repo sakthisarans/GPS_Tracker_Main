@@ -59,8 +59,8 @@ public class CordinatesService {
 
     public ResponseEntity<String> sendMeaasge(SettingsRequest settings){
         try {
-            mqttPublishService.senToMqtt(commonServices.convertToString(settings), String.format("server/%s/settings",settings.getClientId()));
-            log.debug(String.format("server/%s/settings",settings.getClientId()));
+            mqttPublishService.senToMqtt(commonServices.convertToString(settings), String.format("/tracker/%s/settings",settings.getClientId()));
+            log.debug(String.format("/tracker/%s/settings",settings.getClientId()));
         }catch (Exception ex){
             log.debug(ex.toString());
             return new ResponseEntity<>("",HttpStatus.INTERNAL_SERVER_ERROR);
