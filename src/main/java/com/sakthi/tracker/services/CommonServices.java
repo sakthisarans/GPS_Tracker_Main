@@ -67,4 +67,7 @@ public class CommonServices {
     public String convertToString(Object data) throws JsonProcessingException {
         return objectMapper.writeValueAsString(data);
     }
+    public JsonNode convertToJSON(String data) throws JsonProcessingException {
+        return objectMapper.readTree(data);
+    }
 }
