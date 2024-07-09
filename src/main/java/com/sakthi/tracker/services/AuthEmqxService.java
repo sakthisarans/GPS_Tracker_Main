@@ -34,9 +34,6 @@ public class AuthEmqxService {
     @Value("${emqx.mqtt.port}")
     protected String emqxPort;
 
-    @Value("${emqx.mqtt.token}")
-    protected String token;
-
     public String authEmqx() throws JsonProcessingException {
             EmqxAuthRequest emqxAuthRequest = EmqxAuthRequest.builder().username(emqxUsername).password(emqxPassword).build();
             URI emqxServer = UriComponentsBuilder.fromHttpUrl(emqxUrl).port(emqxPort).path("/api/v5/login").build().toUri();
