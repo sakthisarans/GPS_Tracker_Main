@@ -6,8 +6,8 @@ import com.sakthi.tracker.model.client.SettingsRequest;
 import com.sakthi.tracker.model.emqx.CordinateWebHookRequest;
 import com.sakthi.tracker.model.emqx.ReconnectWebHookRequest;
 import com.sakthi.tracker.model.emqx.UpdateTrackerStatusRequest;
-import com.sakthi.tracker.services.CordinatesService;
-import com.sakthi.tracker.services.MqttPublishService;
+import com.sakthi.tracker.services.client.CordinatesService;
+import com.sakthi.tracker.services.client.MqttPublishService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +34,8 @@ public class EmqxController {
         return mqttPublishService.updateSettings(settingsRequest);
     }
     @GetMapping("/gettime")
-    public ResponseEntity<Date> getTime(){
-        return new ResponseEntity<>(new Date(),HttpStatus.OK);
+    public ResponseEntity<String> getTime(){
+        return new ResponseEntity<>(String.valueOf(new Date().getTime()/1000),HttpStatus.OK);
     }
     @PostMapping("/checkcache")
     public ResponseEntity<String> checkCache(@RequestBody ReconnectWebHookRequest connect){

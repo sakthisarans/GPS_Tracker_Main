@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface TrackerRepository extends MongoRepository<Trackers,String> {
     @Query("{'trackerID':?0}")
     public Trackers findByTrackerid(String Trackerid);
+    @Query("{'trackerID': ?0, 'users.email': ?1}")
+    public Trackers findByTrackeridAndEmail(String Trackerid,String email);
 }

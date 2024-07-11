@@ -1,20 +1,16 @@
-package com.sakthi.tracker.services;
+package com.sakthi.tracker.services.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sakthi.tracker.exceptionHandler.AdminNotFound;
-import com.sakthi.tracker.model.client.SettingsRequest;
 import com.sakthi.tracker.model.emqx.CoordinateDocument;
 import com.sakthi.tracker.model.emqx.CordinateWebHookRequest;
 import com.sakthi.tracker.model.emqx.Cordinates;
-import com.sakthi.tracker.model.emqxauth.EmqxAuthRequest;
 import com.sakthi.tracker.repository.CordinatesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
