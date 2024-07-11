@@ -3,7 +3,13 @@ package com.sakthi.tracker.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sakthi.tracker.model.client.SettingsRequest;
+import com.sakthi.tracker.model.emqx.ReconnectWebHookRequest;
+import com.sakthi.tracker.model.emqx.UpdateTrackerStatusRequest;
 import com.sakthi.tracker.model.emqxPublish.EmqxPublishRequest;
+import com.sakthi.tracker.model.offlinecache.TrackerOfflineCache;
+import com.sakthi.tracker.model.tracker.Trackers;
+import com.sakthi.tracker.repository.TrackerCacheRepository;
+import com.sakthi.tracker.repository.TrackerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -15,6 +21,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+import java.util.Objects;
+
 @Slf4j
 @Service
 public class MqttPublishService {
@@ -25,11 +34,50 @@ public class MqttPublishService {
     @Autowired
     AuthEmqxService authEmqxService;
 
+    @Autowired
+    TrackerCacheRepository trackerCache;
+
+    @Autowired
+    TrackerRepository trackerRepository;
+
     RestTemplate restTemplate = new RestTemplate();
 
     public ResponseEntity<String> updateSettings(SettingsRequest settings) throws JsonProcessingException {
+
+        JsonNode emqxPublishResponseJSON= commonServices.convertToJSON(publishApiCall(settings,settings.getClientId()).getBody());
+        if(emqxPublishResponseJSON.has("id")){
+            return new ResponseEntity<>("", HttpStatus.OK);
+        }else{
+            TrackerOfflineCache cache=trackerCache.findByTrackerAndSetting(settings.getClientId(),settings.getSetting());
+            if(cache==null){
+                cache=TrackerOfflineCache.builder().trackerId(settings.getClientId()).setting(settings.getSetting()).trackerData(commonServices.convertToString(settings)).build();
+            }else{
+                cache.setTrackerData(commonServices.convertToString(settings));
+            }
+            trackerCache.save(cache);
+            return new ResponseEntity<>("", HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    public ResponseEntity<String> trackerCacheCheck(ReconnectWebHookRequest connect){
+        List<TrackerOfflineCache> cache=trackerCache.findByTracker(connect.getTrackerId());
+        cache.forEach(x->{
+            try {
+                JsonNode emqxPublishResponseJSON= commonServices.convertToJSON(publishApiCall(commonServices.convertToJSON(x.getTrackerData()),x.getTrackerId()).getBody());
+                if(emqxPublishResponseJSON.has("id")){
+                    trackerCache.delete(x);
+                }
+            } catch (JsonProcessingException e) {
+                log.error(e.getMessage());
+                throw new RuntimeException(e);
+            }
+        });
+        return ResponseEntity.ok("");
+    }
+
+    private HttpEntity<String> publishApiCall(Object settings,String clientId) throws JsonProcessingException {
         String content=commonServices.convertToString(settings);
-        String topic=String.format("/tracker/%s/settings",settings.getClientId());
+        String topic=String.format("/tracker/%s/settings",clientId);
         EmqxPublishRequest emqxPublishRequest=EmqxPublishRequest.builder().
                 qos(0).
                 topic(topic).
@@ -42,12 +90,21 @@ public class MqttPublishService {
         log.debug(commonServices.convertToString(emqxPublishRequest));
         log.debug(authEmqxService.authEmqx());
         HttpEntity<?> entity = new HttpEntity<Object>(emqxPublishRequest,headers);
-        JsonNode emqxPublishResponseJSON= commonServices.convertToJSON(restTemplate.exchange(authEmqxService.getUri("/api/v5/publish"), HttpMethod.POST,entity, String.class).getBody());
-        if(emqxPublishResponseJSON.has("id")){
-            return new ResponseEntity<>("", HttpStatus.OK);
-        }else{
-            //add logic for update tracker later by initiating a webhook on subscription and push to tracker
-            return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
+        return restTemplate.exchange(authEmqxService.getUri("/api/v5/publish"), HttpMethod.POST,entity, String.class);
+    }
+
+    public ResponseEntity<String> updateStatus(UpdateTrackerStatusRequest status) throws JsonProcessingException {
+        Trackers trackers=trackerRepository.findByTrackerid(status.getTrackerId());
+        if(trackers!=null && Objects.equals(status.getStatus(), "client.connected")){
+            trackers.setOnline(true);
+            trackerRepository.save(trackers);
+            return new ResponseEntity<>("",HttpStatus.OK);
+        } else if (trackers!=null && Objects.equals(status.getStatus(), "client.disconnected")) {
+            trackers.setOnline(false);
+            trackerRepository.save(trackers);
+            return new ResponseEntity<>("",HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
