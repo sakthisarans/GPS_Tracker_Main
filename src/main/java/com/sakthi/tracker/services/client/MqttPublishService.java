@@ -44,7 +44,7 @@ public class MqttPublishService {
 
     public ResponseEntity<String> updateSettings(SettingsRequest settings) throws JsonProcessingException {
 
-        JsonNode emqxPublishResponseJSON= commonServices.convertToJSON(publishApiCall(settings,settings.getClientId()).getBody());
+        JsonNode emqxPublishResponseJSON= commonServices.convertToJSON(publishApiCall(settings,settings.getClientId(),"/tracker/%s/settings").getBody());
         if(emqxPublishResponseJSON.has("id")){
             return new ResponseEntity<>("", HttpStatus.OK);
         }else{
@@ -63,7 +63,7 @@ public class MqttPublishService {
         List<TrackerOfflineCache> cache=trackerCache.findByTracker(connect.getTrackerId());
         cache.forEach(x->{
             try {
-                JsonNode emqxPublishResponseJSON= commonServices.convertToJSON(publishApiCall(commonServices.convertToJSON(x.getTrackerData()),x.getTrackerId()).getBody());
+                JsonNode emqxPublishResponseJSON= commonServices.convertToJSON(publishApiCall(commonServices.convertToJSON(x.getTrackerData()),x.getTrackerId(),"/tracker/%s/settings").getBody());
                 if(emqxPublishResponseJSON.has("id")){
                     trackerCache.delete(x);
                 }
@@ -75,9 +75,9 @@ public class MqttPublishService {
         return ResponseEntity.ok("");
     }
 
-    private HttpEntity<String> publishApiCall(Object settings,String clientId) throws JsonProcessingException {
+    public HttpEntity<String> publishApiCall(Object settings,String clientId,String publishTopic) throws JsonProcessingException {
         String content=commonServices.convertToString(settings);
-        String topic=String.format("/tracker/%s/settings",clientId);
+        String topic=String.format(publishTopic,clientId);
         EmqxPublishRequest emqxPublishRequest=EmqxPublishRequest.builder().
                 qos(0).
                 topic(topic).

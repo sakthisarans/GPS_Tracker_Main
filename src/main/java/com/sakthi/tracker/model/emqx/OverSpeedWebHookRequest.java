@@ -6,8 +6,8 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter@Setter
-public class CordinateWebHookRequest {
+public class OverSpeedWebHookRequest {
     private String clientId;
     private String userName;
-    private List<TrackerCordinates> payload;
+    private List<SpeedBody> payload;
 }

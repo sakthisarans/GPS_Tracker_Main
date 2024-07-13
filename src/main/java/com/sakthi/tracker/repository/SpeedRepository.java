@@ -1,22 +1,18 @@
 package com.sakthi.tracker.repository;
 
-
 import com.sakthi.tracker.model.emqx.CoordinateDocument;
+import com.sakthi.tracker.model.emqx.SpeedDocument;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
-import org.springframework.stereotype.Repository;
 
-import javax.xml.crypto.Data;
 import java.util.Date;
 import java.util.List;
 
-@Repository
-public interface CordinatesRepository extends MongoRepository<CoordinateDocument,String> {
+public interface SpeedRepository extends MongoRepository<SpeedDocument,String> {
     @Query("{ 'trackerId': ?0, 'userId': ?1, 'date': { $gte: ?2 } }")
-    public List<CoordinateDocument> findDocumentdByDates(String trackerId,String email, Date from);
-
+    public List<SpeedDocument> findDocumentdByDates(String trackerId, String email, Date from);
 
     @Query("{ 'trackerId': ?0, 'userId': ?1, 'date': { $gte: ?2, $lte : ?3 } }")
-    public List<CoordinateDocument> findDocumentdByDateRange(String trackerId,String email, Date from,Date to);
+    public List<SpeedDocument> findDocumentdByDateRange(String trackerId,String email, Date from,Date to);
 
 }
