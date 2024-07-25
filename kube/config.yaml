@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trackerauth
+spec:
+  selector:
+    matchLabels:
+      app: trackerauth
+  template:
+    metadata:
+      labels:
+        app: trackerauth
+    spec:
+      containers:
+        - name: trackerauth
+          image: sakthisaran/tracker_auth:BUILDNUMBER
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                secretKeyRef:
+                  name: secretpasswords
+                  key: SPRING_PROFILE
+
+            - name: MONGO_UNAME
+              valueFrom:
+                secretKeyRef:
+                  name: secretpasswords
+                  key: MONGO_UNAME
+
+            - name: MONGO_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: secretpasswords
+                  key: MONGO_PWD
+
+          resources:
+            limits:
+              memory: "300Mi"
+              cpu: "300m"
+          ports:
+            - containerPort: 80
