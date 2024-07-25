@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trackerauth
+  name: trackermain
 spec:
   selector:
     matchLabels:
-      app: trackerauth
+      app: trackermain
   template:
     metadata:
       labels:
-        app: trackerauth
+        app: trackermain
     spec:
       containers:
-        - name: trackerauth
+        - name: trackermain
           image: sakthisaran/tracker_auth:BUILDNUMBER
           env:
             - name: SPRING_PROFILES_ACTIVE
